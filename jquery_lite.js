@@ -116,8 +116,17 @@
 		}
 	};
 
+	DOMNodeCollection.prototype.on = function (eventName, callback) {
+		for (var i = 0; i < this.elements.length; i++) {
+			this.elements[i].addEventListener(eventName, callback);
+		}
+	};
 
-
+	DOMNodeCollection.prototype.off = function (eventName, callback) {
+		for (var i = 0; i < this.elements.length; i++) {
+			this.elements[i].removeEventListener(eventName, callback);
+		}
+	};
 
 
 

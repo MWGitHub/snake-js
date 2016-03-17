@@ -39,6 +39,11 @@
       var $divs = $l("div");
 			$divs.remove(".child");
 
+			var click = function (e) {
+				alert('clicked');
+			}
+			$l('body').on('click', click);
+
     </script>
 
 	</body>
