@@ -108,7 +108,6 @@
 			return;
 		}
 	  this.nextDirection = direction;
-		// this.direction = direction;
 	};
 	
 	module.exports = Snake;
@@ -123,7 +122,8 @@
 	var Board = function () {
 	  this.height = 30;
 		this.width = 30;
-		this.snake = new Snake(this.getRandomPos());
+		this.snakeOne = new Snake(this.getRandomPos());
+		this.snakeTwo = new Snake(this.getRandomPos());
 		this.apple = null;
 		this.addApple();
 	};
@@ -142,7 +142,7 @@
 	};
 	
 	Board.prototype.isOccupied = function (pos) {
-	  var occupiedSquares = this.snake.segments;
+	  var occupiedSquares = this.snakeOne.segments.concat(this.snakeTwo.segments);
 		if (this.apple) occupiedSquares.concat([this.apple]);
 		for (var i = 1; i < occupiedSquares.length; i++) {
 			if (pos[0] === occupiedSquares[i][0] &&
@@ -153,8 +153,8 @@
 		return false;
 	};
 	
-	Board.prototype.isSnakeHitWall = function () {
-		var head = this.snake.segments[0];
+	Board.prototype.isSnakeHitWall = function (snake) {
+		var head = snake.segments[0];
 		if (head[0] < 0 || head[0] >= this.height ||
 			head[1] < 0 || head[1] >= this.width) {
 				return true;
@@ -162,8 +162,19 @@
 		return false;
 	};
 	
-	Board.prototype.isSnakeEatApple = function () {
-		var head = this.snake.segments[0];
+	Board.prototype.isSnakeHitOtherSnake = function (deadSnake, liveSnake) {
+		var head = deadSnake.segments[0];
+		for (var i = 1; i < liveSnake.segments.length; i++) {
+			if (head[0] === liveSnake.segments[i][0] &&
+			  head[1] === liveSnake.segments[i][1]) {
+					return true;
+			}
+		}
+		return false;
+	};
+	
+	Board.prototype.isSnakeEatApple = function (snake) {
+		var head = snake.segments[0];
 		if (head[0] === this.apple[0] &&
 			head[1] === this.apple[1]) {
 		  return true;
@@ -171,19 +182,30 @@
 		return false;
 	};
 	
-	Board.prototype.isSnakeDead = function () {
-		return this.isSnakeHitWall() || this.snake.isCollidedSelf();
+	Board.prototype.isGameOver = function () {
+		return this.isSnakeHitWall(this.snakeOne) ||
+		  this.isSnakeHitWall(this.snakeTwo) ||
+			this.snakeOne.isCollidedSelf() ||
+			this.snakeTwo.isCollidedSelf() ||
+			this.isSnakeHitOtherSnake(this.snakeOne, this.snakeTwo) ||
+			this.isSnakeHitOtherSnake(this.snakeTwo, this.snakeOne);
 	};
 	
 	Board.prototype.step = function () {
-		if (this.isSnakeDead()) {
+		if (this.isGameOver()) {
 	    return;
 		} else {
-	    if (this.isSnakeEatApple()) {
-				this.snake.grow(1);
+	    if (this.isSnakeEatApple(this.snakeOne)) {
+				this.snakeOne.grow(1);
 				this.addApple();
 			}
-			this.snake.move();
+			this.snakeOne.move();
+	
+			if (this.isSnakeEatApple(this.snakeTwo)) {
+				this.snakeTwo.grow(1);
+				this.addApple();
+			}
+			this.snakeTwo.move();
 		}
 	};
 	
@@ -199,11 +221,22 @@
 	// left is 37
 	// down is 40
 	
-	var CODE = {
+	var SNAKE_ONE_CODE = {
 		38: "N",
 		39: "E",
 		37: "W",
 		40: "S"
+	};
+	
+	// W is 87
+	// D is 68
+	// S is 83
+	// A is 65
+	var SNAKE_TWO_CODE = {
+	  87: "N",
+		68: "E",
+		65: "W",
+		83: "S"
 	};
 	
 	var SnakeView = function (board, $gameFigure) {
@@ -213,7 +246,7 @@
 		this.render();
 		this.bindKeys();
 	
-		setInterval(this.step.bind(this), 100);
+		this.intervalHandler = setInterval(this.step.bind(this), 75);
 	};
 	
 	SnakeView.prototype.bindKeys = function () {
@@ -221,13 +254,21 @@
 	};
 	
 	SnakeView.prototype.handleKeyEvent = function (e) {
-	  if (CODE[e.keyCode]) {
-			this.board.snake.turn(CODE[e.keyCode]);
+	  if (SNAKE_ONE_CODE[e.keyCode]) {
+			this.board.snakeOne.turn(SNAKE_ONE_CODE[e.keyCode]);
+		}
+		if (SNAKE_TWO_CODE[e.keyCode]) {
+			this.board.snakeTwo.turn(SNAKE_TWO_CODE[e.keyCode]);
 		}
 	};
 	
 	SnakeView.prototype.step = function () {
 		this.board.step();
+		if (this.board.isGameOver()) {
+	    alert("You died!");
+			window.clearInterval(this.intervalHandler);
+			return;
+		}
 		this.render();
 	};
 	
@@ -243,10 +284,16 @@
 	
 	SnakeView.prototype.render = function () {
 		this.$gameFigure.find('li').removeClass();
-		for (var i = 0; i < this.board.snake.segments.length; i++) {
-	    var id = this.posToId(this.board.snake.segments[i]);
-			var $square = $l("#id" + id);
-			$square.addClass('snake-square');
+		for (var i = 0; i < this.board.snakeOne.segments.length; i++) {
+	    var snakeOneId = this.posToId(this.board.snakeOne.segments[i]);
+			var $snakeOneSquare = $l("#id" + snakeOneId);
+			$snakeOneSquare.addClass('snake-one-square');
+		}
+	
+		for (i = 0; i < this.board.snakeTwo.segments.length; i++) {
+	    var snakeTwoId = this.posToId(this.board.snakeTwo.segments[i]);
+			var $snakeTwoSquare = $l("#id" + snakeTwoId);
+			$snakeTwoSquare.addClass('snake-two-square');
 		}
 	
 		var appleId = this.posToId(this.board.apple);

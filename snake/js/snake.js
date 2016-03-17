@@ -46,7 +46,6 @@ Snake.prototype.turn = function (direction) {
 		return;
 	}
   this.nextDirection = direction;
-	// this.direction = direction;
 };
 
 module.exports = Snake;
