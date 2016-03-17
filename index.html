@@ -12,18 +12,33 @@
     <div>
 
     </div>
-		<div class="stuff">
+		<div class="stuff" magic="test">
+			<p>Smething</p>
+		</div>
 
+		<div class="stuff">
+			<p class="child">Something Else</p>
 		</div>
 
 		<a href="#"></a>
+		<a href="#"></a>
+
+		<article>
+
+			<div>
+
+				<p class="child">text  <span></span></p>
+			</div>
+			<div>
+
+			</div>
+
+		</article>
 
     <script type="text/javascript">
-    	var obj = $l("div");
-			console.log(obj);
+      var $divs = $l("div");
+			$divs.remove(".child");
 
-			var node = $l(obj.elements[0]);
-			console.log(node);
     </script>
 
 	</body>
