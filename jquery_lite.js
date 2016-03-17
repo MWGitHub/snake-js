@@ -13,7 +13,9 @@
 			return new DOMNodeCollection(found);
 		}
 
-
+		if (typeof jqArg === 'function') {
+			root.document.addEventListener('DOMContentLoaded', jqArg);
+		}
 	};
 
 	function DOMNodeCollection(elements) {

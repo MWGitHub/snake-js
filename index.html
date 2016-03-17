@@ -6,6 +6,17 @@
 
     <script type="text/javascript" src="./jquery_lite.js"></script>
 
+		<script type="text/javascript">
+			$l(function () {
+				var $divs = $l("div");
+				$divs.remove(".child");
+
+				var click = function (e) {
+					alert('clicked');
+				}
+				$l('body').on('click', click);
+			});
+		</script>
 	</head>
 	<body>
 
@@ -35,16 +46,6 @@
 
 		</article>
 
-    <script type="text/javascript">
-      var $divs = $l("div");
-			$divs.remove(".child");
-
-			var click = function (e) {
-				alert('clicked');
-			}
-			$l('body').on('click', click);
-
-    </script>
 
 	</body>
 </html>
