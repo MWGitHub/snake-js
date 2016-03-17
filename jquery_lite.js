@@ -111,6 +111,10 @@
 	};
 
 	DOMNodeCollection.prototype.removeClass = function (className) {
+		if (className === undefined) {
+			this.attr('class', '');
+			return;
+		}
 		for (var i = 0; i < this.elements.length; i++) {
 			this.elements[i].classList.remove(className);
 		}

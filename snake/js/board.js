@@ -9,8 +9,8 @@ var Board = function () {
 };
 
 Board.prototype.getRandomPos = function () {
-	return [1 + Math.floor(Math.rand() * this.height - 1),
-		1 + Math.floor(Math.rand() * this.width - 1)];
+	return [1 + Math.floor(Math.random() * (this.height - 2)),
+		1 + Math.floor(Math.random() * (this.width - 2))];
 };
 
 Board.prototype.addApple = function () {
@@ -22,7 +22,8 @@ Board.prototype.addApple = function () {
 };
 
 Board.prototype.isOccupied = function (pos) {
-  var occupiedSquares = this.snake.segments.concat([this.apple]);
+  var occupiedSquares = this.snake.segments;
+	if (this.apple) occupiedSquares.concat([this.apple]);
 	for (var i = 1; i < occupiedSquares.length; i++) {
 		if (pos[0] === occupiedSquares[i][0] &&
 			pos[1] === occupiedSquares[i][1]) {
@@ -59,10 +60,10 @@ Board.prototype.step = function () {
     return;
 	} else {
     if (this.isSnakeEatApple()) {
-			snake.grow();
+			this.snake.grow(1);
 			this.addApple();
 		}
-		snake.move();
+		this.snake.move();
 	}
 };
 
