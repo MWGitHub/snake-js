@@ -6,8 +6,6 @@
 		}
 
 		if (typeof jqArg === 'string') {
-			// jqArg is CSS tag or HTML string
-      // assuming for the moment they're always CSS...
 			var found = root.document.querySelectorAll(jqArg);
 			found = Array.prototype.slice.call(found);
 			return new DOMNodeCollection(found);
@@ -16,6 +14,47 @@
 		if (typeof jqArg === 'function') {
 			root.document.addEventListener('DOMContentLoaded', jqArg);
 		}
+	};
+
+	root.$l.extend = function () {
+		var receivingObj = arguments[0];
+		var args = Array.prototype.slice.call(arguments, 1);
+		for (var i = 0; i < args.length; i++) {
+			for (var key in args[i]) {
+				receivingObj[key] = args[i][key];
+			}
+		}
+		return receivingObj;
+	};
+
+	root.$l.ajax = function (choices) {
+    var defaults = {
+			type: 'GET',
+			url: "",
+			success: null,
+			error: function () {
+				console.error("An error occurred.");
+			},
+			complete: null,
+			contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+			data: null
+		};
+		var options = root.$l.extend(defaults, choices);
+
+		var request = new XMLHttpRequest();
+		request.open(options.type, options.url);
+		request.setRequestHeader('Content-Type', options.contentType);
+		request.onreadystatechange = function () {
+			if (request.readyState === 4) {
+				if (request.status < 400 && request.status !== 0) {
+					if (options.success) options.success(request.responseText);
+				} else {
+					if (options.error) options.error(request.responseText);
+				}
+				if (options.complete) options.complete(request.responseText);
+			}
+		};
+		request.send(options.data);
 	};
 
 	function DOMNodeCollection(elements) {
@@ -129,8 +168,6 @@
 			this.elements[i].removeEventListener(eventName, callback);
 		}
 	};
-
-
 
 
 })(this);
